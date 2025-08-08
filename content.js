@@ -1,4 +1,3 @@
-const fs = require("fs");
 console.log("✅ TradingView Auto Monitor started  ");
 
 const strategyTesterButtonSelector =
@@ -123,14 +122,32 @@ async function trackChange() {
       // Save the new value (overwrite the old one)
       saveToStorage(storageKey, currentValue);
 
+      // Step 2: Get the current time
+      const now = new Date();
       dataFrame = {
-        positionPercentage: positionPercentage,
+        positionPercentage,
         positionOpenPrice,
         positionClosePrice,
         positionDirection,
         timeISO: now.toISOString(),
         timeUnix: now.getTime(),
       };
+      chrome.storage.local.get(["tradeResult"], (result) => {
+        const currentData = result.myData || [];
+        currentData.push(dataFrame); // newData = your object
+
+        chrome.storage.local.set({ myData: currentData }, () => {
+          console.log(
+            `✅ Data updated in Chrome storage. positionPercentage:${positionPercentage} | positionOpenPrice:${positionOpenPrice} | positionClosePrice:${positionClosePrice} | positionDirection:${positionDirection} `
+          );
+        });
+      });
+      const updatedData = [...existingData, ...dataFrame];
+
+      // Step 4: Write back to file
+      fs.writeFileSync(filePath, JSON.stringify(updatedData, null, 2));
+
+      console.log("✅ Data appended without overwriting previous content.");
     } else {
       console.log("✅ Value is the same. Nothing changed.");
     }
@@ -138,8 +155,6 @@ async function trackChange() {
     console.warn("❌ Error:", err);
   }
 }
-
-// add button document.querySelector("#overlap-manager-root > div:nth-child(3) > div > div > div > div > div > div > button")
 
 // Run on load
 setInterval(() => {
