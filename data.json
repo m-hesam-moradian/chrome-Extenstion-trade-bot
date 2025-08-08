@@ -1,0 +1,10 @@
+[
+  {
+    "positionPercentage": "positionPercentage",
+    "positionOpenPrice": "positionOpenPrice",
+    "positionClosePrice": "positionClosePrice",
+    "positionDirection": "positionDirection",
+    "timeISO": "now",
+    "timeUnix": "now.getTime()"
+  }
+]
