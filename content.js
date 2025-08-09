@@ -86,36 +86,37 @@ async function trackChange() {
         console.log("✅ Found data element:", el.innerHTML);
 
         // Wait again for updated target element (optional)
-        return waitForElement(tradeResultPerPercentageSelector);
+        return waitForElement(positionPercentageSelector);
       })
       .catch((err) => {
         console.warn("❌", err);
       });
+
     const currentValue = tradeResultPerPercentage.innerText.trim(); // Or use innerHTML if needed
 
     const storageKey = "lastTrackedValue";
-    const previousValue = (await loadFromStorage(storageKey)) || "no data"; // Default to "no data" if not found
 
-    if (previousValue === "no data") {
+    if (!previousValue) {
       console.log("🆕 First time tracking. Saving current value only.");
       saveToStorage(storageKey, currentValue);
+      previousValue = await loadFromStorage(storageKey);
     } else if (currentValue !== previousValue) {
       console.log("🔁 Value changed!");
       const positionPercentage = document.querySelector(
         positionPercentageSelector
-      );
+      ).innerHTML;
 
       const positionOpenPrice = document.querySelector(
         positionOpenPriceSelector
-      );
+      ).innerHTML;
 
       const positionClosePrice = document.querySelector(
         positionClosePriceSelector
-      );
+      ).innerHTML;
 
       const positionDirection = document.querySelector(
         positionDirectionSelector
-      );
+      ).innerHTML;
 
       console.log("Old:", previousValue, "→ New:", currentValue);
 
@@ -142,10 +143,6 @@ async function trackChange() {
           );
         });
       });
-      const updatedData = [...existingData, ...dataFrame];
-
-      // Step 4: Write back to file
-      fs.writeFileSync(filePath, JSON.stringify(updatedData, null, 2));
 
       console.log("✅ Data appended without overwriting previous content.");
     } else {
@@ -157,6 +154,7 @@ async function trackChange() {
 }
 
 // Run on load
+let previousValue = false;
 setInterval(() => {
   trackChange();
 }, 10000); // 45,000 ms = 45 seconds
